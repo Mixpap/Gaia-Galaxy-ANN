@@ -1,2 +1,5 @@
-.gitingore
+.gitignore
+.gitignore~
 *.pat
+*.pyc
+*checkpoint.ipynb
