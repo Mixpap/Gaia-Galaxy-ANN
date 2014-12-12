@@ -153,11 +153,9 @@ def Folder_Classification_Report(Folder, TP=0.5, FP=0.5):
     TPI = []
     TPQ = []
     accuracy = []
-    filelist = []
-    # Folder='/home/strangeattractor/Projects/ipython/asteroskopeio/Results'
-    print 'Reading %d files in %s' % (len(listdir(Folder)), Folder)
-    for i, f in enumerate(listdir(Folder)):
-        filelist.append(f)
+    filelist = [f for f in listdir(Folder) if f.endswith('res')]
+    print 'Reading %d files in %s' % (len(filelist), Folder)
+    for i, f in enumerate(filelist):
         datafile = 'Results/' + f
         ID, real, res = ReadData(datafile)
         CM, NCM, dfM, dfN = funcs.ConfusionMatrix(ID, real, res, TP, FP)
@@ -172,7 +170,7 @@ def Folder_Classification_Report(Folder, TP=0.5, FP=0.5):
         TPI.append(NCM[2, 2])
         TPQ.append(NCM[3, 3])
         accuracy.append((TPE[i] + TPS[i] + TPI[i] + TPQ[i]) / NCM.sum())
-        print i, filelist[i], accuracy[i]
+        print i, f, accuracy[i]
 
     accuracy = np.array(accuracy)
     d = np.array(d)
@@ -199,18 +197,11 @@ def Folder_Regression_Report(Folder):
     Hlayers = []
     sdA = []
     sdZ = []
-    filelist = []
-    # Folder='/home/strangeattractor/Projects/ipython/asteroskopeio/Results'
-    files = listdir(Folder)
+    filelist = [f for f in listdir('AZres') if f.endswith('res')]
+    del filelist[filelist.index('i96h24h12n0.02d0.1c1000o2R11.res')]
+    print 'Reading %d files in %s' % (len(filelist), Folder)
 
-    del files[files.index('i96h24h12n0.02d0.1c1000o2R11.res')]
-    del files[
-        files.index('SnnsOptR13C0TestAX_UgcLib12_L2N1S0G150I0Z0020A0060L.pat')]
-
-    print 'Reading %d files in %s' % (len(files), Folder)
-
-    for i, f in enumerate(files):
-        filelist.append(f)
+    for i, f in enumerate(filelist):
         datafile = 'AZres/' + f
         ID, real, res = ReadData(datafile)
 
@@ -237,7 +228,7 @@ def Folder_Regression_Report(Folder):
                         for j in xrange(len(f)) if f.find('h', j) == j])
         sdA.append(dA.std(ddof=1.0))
         sdZ.append(dZ.std(ddof=1.0))
-        print i, filelist[i], sdA[i], sdZ[i]
+        print i, f, sdA[i], sdZ[i]
         i = i + 1
 
     d = np.array(d)
