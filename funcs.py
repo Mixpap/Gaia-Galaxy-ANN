@@ -253,6 +253,78 @@ def Folder_Regression_Report(Folder):
     # for (i, j), z in np.ndenumerate(df):
     #    ax.text(j, i, '{:0.2f}'.format(z), ha='center', va='center')
     # plt.tight_layout()
+def plot_reg_hist(datafile):
+    AVE_A = 0.42128425
+    STD_A = 0.28714299
+    AVE_Z = 0.09973424
+    STD_Z = 0.05802179
+
+    ID, real, res = ReadData(datafile)
+
+    uAn = res[:, 0]
+    rAn = real[:, 0]
+    uZn = res[:, 1]
+    rZn = real[:, 1]
+
+    dAn = uAn - rAn
+    dZn = uZn - rZn
+
+    uA = 3.0 * STD_A * uAn + AVE_A
+    uZ = 3.0 * STD_Z * uZn + AVE_Z
+
+    rA = 3.0 * STD_A * rAn + AVE_A
+    rZ = 3.0 * STD_Z * rZn + AVE_Z
+
+    dA = uA - rA
+    dZ = uZ - rZ
+
+    fig = plt.figure(figsize=(17,8))
+    ax1 = plt.subplot2grid((1,2), (0,0))
+    ax2 = plt.subplot2grid((1,2), (0,1))
+    ax1.set_title('Extinction SD Hist')
+    ax1.hist(dA)
+    ax2.set_title('Redshift SD Hist')
+    ax2.hist(dZ)
+
+def plot_reg_scat(datafile):
+    AVE_A = 0.42128425
+    STD_A = 0.28714299
+    AVE_Z = 0.09973424
+    STD_Z = 0.05802179
+
+    ID, real, res = ReadData(datafile)
+
+    uAn = res[:, 0]
+    rAn = real[:, 0]
+    uZn = res[:, 1]
+    rZn = real[:, 1]
+
+    dAn = uAn - rAn
+    dZn = uZn - rZn
+
+    uA = 3.0 * STD_A * uAn + AVE_A
+    uZ = 3.0 * STD_Z * uZn + AVE_Z
+
+    rA = 3.0 * STD_A * rAn + AVE_A
+    rZ = 3.0 * STD_Z * rZn + AVE_Z
+
+    dA = uA - rA
+    dZ = uZ - rZ
+
+    fig = plt.figure(figsize=(17,8))
+    ax1 = plt.subplot2grid((1,2), (0,0))
+    ax2 = plt.subplot2grid((1,2), (0,1))
+    ax1.set_title('Extiction')
+    ax1.set_xlabel('Unit')
+    ax1.set_ylabel('True')
+    ax1.scatter(uA,rA,alpha=0.7)
+    ax1.plot(np.linspace(uA.min(),uA.max(),100),np.linspace(uA.min(),uA.max(),100),'r')
+    ax2.set_title('Redshift')
+    ax2.set_xlabel('Unit')
+    ax2.set_ylabel('True')
+    ax2.scatter(uZ,rZ)
+    ax2.plot(np.linspace(uZ.min(),uZ.max(),100),np.linspace(uZ.min(),uZ.max(),100),'r')
+
 def make_box(xx, yy):
     """
     Make Boxplot (xarray, yarray)
@@ -266,7 +338,7 @@ def make_box(xx, yy):
 
 
 def plot_CM(df, datafile, TP, FP):
-    ax = seaborn.hetamap(df, annot=True)
+    ax = seaborn.heatmap(df, annot=True)
     ax.set_title("Confusion matrix (TP> %0.1f, DP> %0.1f) for file: %s" % (
         TP, FP, datafile), fontsize=12)
 
