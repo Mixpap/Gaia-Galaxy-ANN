@@ -10,7 +10,6 @@ np.set_printoptions(3, suppress=1)
 #=================DATA-INPUT==========================================
 #=====================================================================
 
-
 def ReadData(datafile):
     """
     Return ID,real,res from datafile
@@ -99,13 +98,13 @@ def WTA(ID, real, res):
     return CM
 
 
-def ConfusionMatrix(ID, real, res, TP=0.5, FP=0.5):
+def ConfusionMatrix(real, res, TP=0.5, FP=0.5):
     """
     Return [0]Numpy Array CM,[1]Numpy Array NormCM,[2]Pandas Dataframe CM,[3]Pandas Dataframe NormCM  from ID,real,res
     """
     Ntypes = np.zeros((4, 1))
     CM = np.zeros((4, 4), dtype=int)
-    for i in range(len(ID)):
+    for i in range(np.shape(real)[0]):
         p = real[i].argmax()
         Ntypes[p] = Ntypes[p] + 1
 
