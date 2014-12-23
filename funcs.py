@@ -155,9 +155,9 @@ def Folder_Classification_Report(Folder, TP=0.5, FP=0.5):
     filelist = [f for f in listdir(Folder) if f.endswith('res')]
     print 'Reading %d files in %s' % (len(filelist), Folder)
     for i, f in enumerate(filelist):
-        datafile = 'Results/' + f
+        datafile = 'Cres/' + f
         ID, real, res = ReadData(datafile)
-        CM, NCM, dfM, dfN = funcs.ConfusionMatrix(ID, real, res, TP, FP)
+        CM, NCM, dfM, dfN = ConfusionMatrix(real, res, TP, FP)
         #MM,DM,dfMM,dfDM = funcs.AverageMatrix(real,res)
 
         d.append(float(f[f.find('d') + 1:f.find('c')]))
@@ -252,6 +252,56 @@ def Folder_Regression_Report(Folder):
     # for (i, j), z in np.ndenumerate(df):
     #    ax.text(j, i, '{:0.2f}'.format(z), ha='center', va='center')
     # plt.tight_layout()
+
+def plot_reg(datafile):
+    AVE_A = 0.42128425
+    STD_A = 0.28714299
+    AVE_Z = 0.09973424
+    STD_Z = 0.05802179
+
+    ID, real, res = ReadData(datafile)
+
+    uAn = res[:, 0]
+    rAn = real[:, 0]
+    uZn = res[:, 1]
+    rZn = real[:, 1]
+
+    dAn = uAn - rAn
+    dZn = uZn - rZn
+
+    uA = 3.0 * STD_A * uAn + AVE_A
+    uZ = 3.0 * STD_Z * uZn + AVE_Z
+
+    rA = 3.0 * STD_A * rAn + AVE_A
+    rZ = 3.0 * STD_Z * rZn + AVE_Z
+
+    dA = uA - rA
+    dZ = uZ - rZ
+
+    fig = plt.figure(figsize=(20,12))
+    ax1 = plt.subplot2grid((2,2), (0,0))
+    ax2 = plt.subplot2grid((2,2), (0,1))
+    ax3 = plt.subplot2grid((2,2), (1,0))
+    ax4 = plt.subplot2grid((2,2), (1,1))
+
+    ax1.set_title('Extinction Standard Deviation Histogram')
+    ax1.hist(dA,bins=10)
+    ax2.set_title('Redshift Standard Deviation Histogram')
+    ax2.hist(dZ,bins=10)
+
+    ax3.set_title('Extiction Data')
+    ax3.set_xlabel('Unit')
+    ax3.set_ylabel('True')
+    ax3.scatter(uA,rA,alpha=0.7)
+    ax3.plot(np.linspace(1.1*uA.min(),1.1*uA.max(),100),np.linspace(1.1*uA.min(),1.1*uA.max(),100),'r')
+
+    ax4.set_title('Redshift Data')
+    ax4.set_xlabel('Unit')
+    ax4.set_ylabel('True')
+    ax4.scatter(uZ,rZ)
+    ax4.plot(np.linspace(1.1*uZ.min(),1.1*uZ.max(),100),np.linspace(1.1*uZ.min(),1.1*uZ.max(),100),'r')
+
+
 def plot_reg_hist(datafile):
     AVE_A = 0.42128425
     STD_A = 0.28714299
@@ -284,6 +334,7 @@ def plot_reg_hist(datafile):
     ax1.hist(dA)
     ax2.set_title('Redshift SD Hist')
     ax2.hist(dZ)
+    #plt.save('Ext-Red Histograms.png')
 
 def plot_reg_scat(datafile):
     AVE_A = 0.42128425
@@ -323,7 +374,7 @@ def plot_reg_scat(datafile):
     ax2.set_ylabel('True')
     ax2.scatter(uZ,rZ)
     ax2.plot(np.linspace(uZ.min(),uZ.max(),100),np.linspace(uZ.min(),uZ.max(),100),'r')
-
+    #plt.save('Ext-Red Linear.png')
 def make_box(xx, yy):
     """
     Make Boxplot (xarray, yarray)
@@ -337,18 +388,20 @@ def make_box(xx, yy):
 
 
 def plot_CM(df, datafile, TP, FP):
+    fig = plt.figure(figsize=(9, 7))
     ax = seaborn.heatmap(df, annot=True)
     ax.set_title("Confusion matrix (TP> %0.1f, DP> %0.1f) for file: %s" % (
         TP, FP, datafile), fontsize=12)
-
+    #plt.save('Confusion matrix.png')
 
 def plot_MM(dfM, dfsd, datafile):
-    ax = seaborn.heathmap(dfM, annot=True)
+    fig = plt.figure(figsize=(9, 7))
+    ax = seaborn.heatmap(dfM, annot=True)
     ax.set_title("Average for file: %s" % (datafile), fontsize=12)
     # for (i, j), z in np.ndenumerate(dfM):
     #    ax.text(j, i, '{:0.2f} +/- {:0.2f}'.format(z,dfsd.ix[i,j]), ha='center', va='center')
     # plt.tight_layout()
-
+    #plt.save('Average matrix.png')
 
 def plot_CM_MM(dfcm, dfM, dfsd, datafile, TP, FP):
     fig = plt.figure(figsize=(16, 10))
@@ -375,13 +428,14 @@ def plot_CM_MM(dfcm, dfM, dfsd, datafile, TP, FP):
 
 
 def plot_bars(df):
-    fig = plt.figure(figsize=(18, 5))
+    fig = plt.figure(figsize=(19, 7))
     ax1 = plt.subplot2grid((1, 2), (0, 0))
     ax2 = plt.subplot2grid((1, 2), (0, 1))
     #ax.set_title("BarPlot for file: %s"%datafile,fontsize=12)
     df.plot(kind='bar', ax=ax1)
     df.plot(kind='bar', stacked='true', ax=ax2)
     plt.tight_layout()
+    #plt.save('Barplot.png')
 
 
 def make_hists(real, res):
@@ -389,22 +443,22 @@ def make_hists(real, res):
     Y = 4
     fig = plt.figure(figsize=(16, 8))
     fig.text(-0.035, 0.125, 'Histograms For \n Galaxy Type Q', ha="center",
-             va="center", size=12, bbox=dict(boxstyle="square", alpha=0.5))
+             va="center", size=12, color='white',bbox=dict(boxstyle="square", alpha=0.75))
     fig.text(-0.035, 0.375, 'Histograms For \n Galaxy Type I', ha="center",
-             va="center", size=12, bbox=dict(boxstyle="square", alpha=0.5))
+             va="center", size=12, color='white',bbox=dict(boxstyle="square", alpha=0.75))
     fig.text(-0.035, 0.625, 'Histograms For \n Galaxy Type S', ha="center",
-             va="center", size=12, bbox=dict(boxstyle="square", alpha=0.5))
+             va="center", size=12, color='white',bbox=dict(boxstyle="square", alpha=0.75))
     fig.text(-0.035, 0.875, 'Histograms For \n Galaxy Type E', ha="center",
-             va="center", size=12, bbox=dict(boxstyle="square", alpha=0.5))
+             va="center", size=12, color='white', bbox=dict(boxstyle="square", alpha=0.75))
 
     fig.text(0.125, 1.025, 'E - Unit', rotation=270, ha="center",
-             va="center", size=12, bbox=dict(boxstyle="rarrow", alpha=0.5))
+             va="center", size=12, color='white',bbox=dict(boxstyle="rarrow", alpha=0.75))
     fig.text(0.375, 1.025, 'S - Unit', rotation=270, ha="center",
-             va="center", size=12, bbox=dict(boxstyle="rarrow,pad=0.3", alpha=0.5))
+             va="center", size=12, color='white',bbox=dict(boxstyle="rarrow,pad=0.3", alpha=0.75))
     fig.text(0.625, 1.025, 'I - Unit', rotation=270, ha="center",
-             va="center", size=12, bbox=dict(boxstyle="rarrow,pad=0.3", alpha=0.5))
+             va="center", size=12, color='white',bbox=dict(boxstyle="rarrow,pad=0.3", alpha=0.75))
     fig.text(0.875, 1.025, 'Q - Unit', rotation=270, ha="center",
-             va="center", size=12, bbox=dict(boxstyle="rarrow,pad=0.3", alpha=0.5))
+             va="center", size=12, color='white',bbox=dict(boxstyle="rarrow,pad=0.3", alpha=0.75))
 
     ax1 = plt.subplot2grid((X, Y), (0, 0))
     ax2 = plt.subplot2grid((X, Y), (0, 1))
@@ -497,11 +551,21 @@ def make_hists(real, res):
 #=====================================================================
 
 
-def FullReport(datafile, TP=0.5, FP=0.5):
+def Full_Clasification_Report(datafile):
     ID, real, res = ReadData(datafile)
-    wtaM = WTA(ID, real, res)
-    CM, NCM, dfM, dfN = ConfusionMatrix(ID, real, res, TP, FP)
+    #wtaM = WTA(ID, real, res)
+
     MM, DM, dfMM, dfDM = AverageMatrix(real, res)
-    plot_CM_MM(dfN, dfMM, dfDM, datafile, TP, FP)
+    plot_MM(dfMM,dfDM,datafile)
+
+    CM, NCM, dfM, dfN = ConfusionMatrix(real, res, TP=0.5, FP=0.5)
+    plot_CM(dfN, datafile, TP=0.5, FP=0.5)
+
+    CM, NCM, dfM, dfN = ConfusionMatrix(real, res, TP=0.9, FP=0.9)
+    plot_CM(dfN, datafile, TP=0.9, FP=0.9)
+
     plot_bars(dfN)
     make_hists(real, res)
+
+def Full_Regression_Report(datafile):
+    plot_reg(datafile)
